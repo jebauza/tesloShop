@@ -5,7 +5,6 @@
 ## Steps to Run the NestJS Project with Docker and Postgres Database
 
 ### 1. Clone the repository
-
 ```bash
 git clone <REPOSITORY_URL>
 cd 04-teslo-shop
@@ -45,6 +44,12 @@ npm run migration:run
 
 ```bash
 npm run start:dev
+```
+
+### 7. Run SEED
+
+```bash
+http://localhost:3000/api/seed
 ```
 
 The application will be available at `http://localhost:3000`.
