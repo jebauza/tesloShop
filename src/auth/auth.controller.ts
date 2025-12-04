@@ -29,7 +29,7 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(AuthGuard())
+  @Auth()
   meUser(
     @GetUser() user: User,
   ) {
