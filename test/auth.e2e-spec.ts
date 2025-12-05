@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-const request = require('supertest');
 import { AppTestModule } from './app-test.module';
+
+const request = require('supertest');
 
 describe('AuthController (E2E)', () => {
   let app: INestApplication;
@@ -27,32 +28,32 @@ describe('AuthController (E2E)', () => {
     await app.close();
   });
 
-it('POST /auth/register → should register a user', async () => {
+  it('POST /auth/register → should register a user', async () => {
     const res = await request(app.getHttpServer())
-        .post('/auth/register')
-        .send(user)
-        .expect(201);
+      .post('/auth/register')
+      .send(user)
+      .expect(201);
 
     expect(res.body.token).toBeDefined();
     expect(res.body.email).toBe(user.email);
-});
+  });
 
-it('POST /auth/login → should return token', async () => {
+  it('POST /auth/login → should return token', async () => {
     const res = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ email: user.email, password: user.password })
-        .expect(200);
+      .post('/auth/login')
+      .send({ email: user.email, password: user.password })
+      .expect(200);
 
     token = res.body.token;
     expect(token).toBeDefined();
-});
+  });
 
-it('GET /auth/me → should return authenticated user', async () => {
+  it('GET /auth/me → should return authenticated user', async () => {
     const res = await request(app.getHttpServer())
-        .get('/auth/me')
-        .set('Authorization', `Bearer ${token}`)
-        .expect(200);
+      .get('/auth/me')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
 
     expect(res.body.email).toBe(user.email);
-});
+  });
 });
