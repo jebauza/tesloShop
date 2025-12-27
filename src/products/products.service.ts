@@ -8,6 +8,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { ProductImage } from './entities/product-image.entity';
+import { User } from '../auth/entities/user.entity';
 // import { isUUID } from 'src/common/utils/uuid';
 
 
@@ -28,7 +29,7 @@ export class ProductsService {
   ) {}
 
   
-  async create(createProductDto: CreateProductDto): Promise<any> {
+  async create(createProductDto: CreateProductDto, user: User): Promise<any> {
 
     let newProduct;
     const { images = [], ...productData } = createProductDto;
@@ -37,6 +38,7 @@ export class ProductsService {
       newProduct = this.productsRepository.create({
         ...productData,
         images: images.map( url => this.productImagesRepository.create({ url }) ),
+        user: user,
       });
 
       await this.productsRepository.save(newProduct);
@@ -97,7 +99,7 @@ export class ProductsService {
     };
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto): Promise<any> {
+  async update(id: string, updateProductDto: UpdateProductDto, user: User): Promise<any> {
     const { images, ...toUpdate } = updateProductDto
 
     const product = await this.productsRepository.preload({ id, ...toUpdate });
@@ -118,6 +120,7 @@ export class ProductsService {
         );
       }
 
+      product.user = user;
       await queryRunner.manager.save(product);
       // await this.productsRepository.save(product);
 

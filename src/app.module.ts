@@ -20,6 +20,7 @@ import { AuthModule } from './auth/auth.module';
       database: process.env.DB_NAME,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
+      schema: (process.env.DB_SCHEMA ?? 'public'),
       autoLoadEntities: true,
       synchronize: true,
     }),
