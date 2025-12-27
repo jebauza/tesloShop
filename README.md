@@ -53,6 +53,7 @@ http://localhost:3000/api/seed
 ```
 
 The application will be available at `http://localhost:3000`.
+Swagger docs available on `http://localhost:3000/api/docs`.
 
 ---
 

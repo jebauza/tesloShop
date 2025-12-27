@@ -11,29 +11,45 @@ import { UserRoleGuard } from './guards/user-role.guard';
 import { RoleProtected } from './decorators/role-protected.decorator';
 import { ValidRoles } from './interfaces/valid-roles';
 import { Auth } from './decorators/auth.decorator';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { AuthResponseDto } from './dto/auth-response.dto';
 
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  createUser(@Body() createUserDto: CreateUserDto) {
-    return this.authService.create(createUserDto);
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiBody({ type: CreateUserDto })
+  @ApiCreatedResponse({ description: 'OK', type: AuthResponseDto })
+  @ApiBadRequestResponse({ description: 'Bad Request', example: { statusCode: 400, message: 'Key (...)=(...) already exists.', error: 'Bad Request' } })
+  @ApiInternalServerErrorResponse({ description: 'Internal Server Error', example: { statusCode: 500, message: 'Internal server error' } })
+  registerUser(@Body() createUserDto: CreateUserDto) {
+    return this.authService.register(createUserDto);
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'User login' })
+  @ApiBody({ type: LoginUserDto })
+  @ApiOkResponse({ description: 'OK', type: AuthResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized', example: { statusCode: 401, message: 'Invalid credentials', error: 'Unauthorized' } })
+  @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
   loginUser(@Body() loginUserDto: LoginUserDto) {
     return this.authService.login(loginUserDto);
   }
 
   @Get('me')
   @Auth()
-  meUser(
-    @GetUser() user: User,
-  ) {
-    return user;
+  @ApiOperation({ summary: 'Get logged-in user information' })
+  @ApiBearerAuth('JWT')
+  @ApiOkResponse({ description: 'OK', type: AuthResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
+  meUser(@GetUser() user: User) {
+    return this.authService.checkAuthStatus(user);
   }
 
   @Get('private')

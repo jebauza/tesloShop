@@ -8,6 +8,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { User } from './entities/user.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { AuthResponseDto } from './dto/auth-response.dto';
+import { handleDBErrors } from '../common/helpers/errors.helper';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +21,20 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async register(createUserDto: CreateUserDto): Promise<AuthResponseDto> {
+    const user = await this.create(createUserDto);
+
+    const authResponseDto: AuthResponseDto = {
+      id: user.id,
+      email: user.email,
+      fullname: user.fullname,
+      token: this.getJwtToken({id: user.id})
+    };
+
+    return authResponseDto;
+  }
+
+  async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       const {password, ...userData} = createUserDto;
       const user = this.usersRepository.create({
@@ -27,27 +42,24 @@ export class AuthService {
         password: bcrypt.hashSync(password, 10),
       });
       await this.usersRepository.save(user);
-      const { password: _, ...safeUser } = user;
 
-      return {
-        ...safeUser,
-        token: this.getJwtToken({id: user.id})
-      };
-      
+      return user;
+
     } catch (error) {
-      this.handleDBErrors(error);
+      handleDBErrors(error);
+      throw error;
     }
   }
 
-  async login(loginUserDto: LoginUserDto) {
-
+  async login(loginUserDto: LoginUserDto): Promise<AuthResponseDto> {
     const {email, password} = loginUserDto;
     const user = await this.usersRepository.findOne({
       where: {email},
       select: {
         id: true, 
-        email: true, 
-        password: true
+        email: true,
+        password: true,
+        fullname: true,
       }
     });
 
@@ -57,24 +69,31 @@ export class AuthService {
     if (!bcrypt.compareSync(password, user.password))
       throw new UnauthorizedException('Invalid credentials');
 
-    const { password: _, ...safeUser } = user;
-
-    return {
-      ...safeUser,
+    const authResponseDto: AuthResponseDto = {
+      id: user.id,
+      email: user.email,
+      fullname: user.fullname,
       token: this.getJwtToken({id: user.id})
     };
+
+    return authResponseDto;
+  }
+
+  checkAuthStatus(user: User): AuthResponseDto {
+
+    const authResponseDto: AuthResponseDto = {
+      id: user.id,
+      email: user.email,
+      fullname: user.fullname,
+      token: this.getJwtToken({id: user.id})
+    };
+
+    return authResponseDto;
   }
 
   private getJwtToken( payload: JwtPayload ) {
     const token = this.jwtService.sign( payload );
 
     return token;
-  }
-
-  private handleDBErrors( error: any ): never {
-    if ( error.code === '23505' )
-      throw new BadRequestException(error.detail);
-
-    throw new InternalServerErrorException('Please check server logs');
   }
 }
