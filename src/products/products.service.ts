@@ -1,21 +1,22 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { validate as isUUID } from 'uuid';
 
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { CreateProductDto } from './dto/request/create-product.dto';
+import { UpdateProductDto } from './dto/request/update-product.dto';
 import { Product } from './entities/product.entity';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 import { ProductImage } from './entities/product-image.entity';
 import { User } from '../auth/entities/user.entity';
-// import { isUUID } from 'src/common/utils/uuid';
+import { handleDBException } from '../common/helpers/errors.helper';
+import { ProductPaginationResponseDto } from './dto/response/product-pagination-response.dto';
 
 
 @Injectable()
 export class ProductsService {
 
-  private readonly logger = new Logger('ProductsService');
+  private readonly loggerName: string = 'ProductsService';
   private readonly defaultLimit: number = 10;
 
   constructor(
@@ -29,7 +30,7 @@ export class ProductsService {
   ) {}
 
   
-  async create(createProductDto: CreateProductDto, user: User): Promise<any> {
+  async create(createProductDto: CreateProductDto, user: User) {
 
     let newProduct;
     const { images = [], ...productData } = createProductDto;
@@ -45,14 +46,14 @@ export class ProductsService {
       return { ...newProduct, images };
       
     } catch (error) {
-      this.handleDataBaseException(error);
+      handleDBException(this.loggerName, error);
     }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<any[]> {
+  async pagination(paginationDto: PaginationDto): Promise<ProductPaginationResponseDto> {
     const { offset = 0, limit = this.defaultLimit } = paginationDto;
 
-    const products = await this.productsRepository.find({
+    const [products, total] = await this.productsRepository.findAndCount({
       take: limit,
       skip: offset,
       relations: {
@@ -61,10 +62,12 @@ export class ProductsService {
       order: { title: 'ASC' },
     });
 
-    return products.map((product) => ({
+    const items = products.map(product => ({
       ...product,
-      images: (product.images ? product.images.map(img => img.url) : []) 
+      images: product.images ? product.images.map(img => img.url) : [],
     }));
+
+    return { offset, limit, total, items };
   }
 
   async findOne(term: string): Promise<Product> {
@@ -133,7 +136,7 @@ export class ProductsService {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
 
-      this.handleDataBaseException(error);
+      handleDBException(this.loggerName, error);
     }
   }
 
@@ -155,16 +158,7 @@ export class ProductsService {
       await query.delete().where({}).execute();
       
     } catch (error) {
-      this.handleDataBaseException(error);
+      handleDBException(this.loggerName, error);
     }
-  }
-
-  private handleDataBaseException(error: any) {
-    if (error.code === '23505') {
-      throw new BadRequestException(error.detail);
-    }
-
-    this.logger.error(error);
-    throw new InternalServerErrorException('Unexpected error, check server logs');
   }
 }

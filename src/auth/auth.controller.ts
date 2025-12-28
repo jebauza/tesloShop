@@ -1,21 +1,22 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Req, Headers, SetMetadata} from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { LoginUserDto } from './dto/login-user.dto';
+import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Post, Req, SetMetadata, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { GetUser } from './decorators/get-user.decorator';
-import { User } from './entities/user.entity';
-import { RawHeaders } from './decorators/raw-headers.decorator';
-import type { IncomingHttpHeaders } from 'http';
-import { UserRoleGuard } from './guards/user-role.guard';
-import { RoleProtected } from './decorators/role-protected.decorator';
-import { ValidRoles } from './interfaces/valid-roles';
-import { Auth } from './decorators/auth.decorator';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { AuthResponseDto } from './dto/auth-response.dto';
+
+import { AuthResponseDto } from './dto/response/auth-response.dto';
+import { CreateUserDto } from './dto/request/create-user.dto';
+import { LoginUserDto } from './dto/request/login-user.dto';
+import { AuthService } from './auth.service';
+import { Auth } from './decorators/auth.decorator';
+import { GetUser } from './decorators/get-user.decorator';
+import { RawHeaders } from './decorators/raw-headers.decorator';
+import { RoleProtected } from './decorators/role-protected.decorator';
+import { User } from './entities/user.entity';
+import { UserRoleGuard } from './guards/user-role.guard';
+import { ValidRoles } from './interfaces/valid-roles';
+import type { IncomingHttpHeaders } from 'http';
 
 @Controller('auth')
-@ApiTags('auth')
+@ApiTags('Auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -24,9 +25,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Register a new user' })
   @ApiBody({ type: CreateUserDto })
   @ApiCreatedResponse({ description: 'OK', type: AuthResponseDto })
-  @ApiBadRequestResponse({ description: 'Bad Request', example: { statusCode: 400, message: 'Key (...)=(...) already exists.', error: 'Bad Request' } })
+  @ApiBadRequestResponse({ description: 'Bad Request', example: { statusCode: 400, message: '...', error: 'Bad Request' } })
   @ApiInternalServerErrorResponse({ description: 'Internal Server Error', example: { statusCode: 500, message: 'Internal server error' } })
-  registerUser(@Body() createUserDto: CreateUserDto) {
+  registerUser(@Body() createUserDto: CreateUserDto): Promise<AuthResponseDto> {
     return this.authService.register(createUserDto);
   }
 
@@ -37,7 +38,7 @@ export class AuthController {
   @ApiOkResponse({ description: 'OK', type: AuthResponseDto })
   @ApiUnauthorizedResponse({ description: 'Unauthorized', example: { statusCode: 401, message: 'Invalid credentials', error: 'Unauthorized' } })
   @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
-  loginUser(@Body() loginUserDto: LoginUserDto) {
+  loginUser(@Body() loginUserDto: LoginUserDto): Promise<AuthResponseDto> {
     return this.authService.login(loginUserDto);
   }
 
@@ -48,7 +49,7 @@ export class AuthController {
   @ApiOkResponse({ description: 'OK', type: AuthResponseDto })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
-  meUser(@GetUser() user: User) {
+  meUser(@GetUser() user: User): AuthResponseDto {
     return this.authService.checkAuthStatus(user);
   }
 

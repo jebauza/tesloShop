@@ -1,32 +1,33 @@
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
 import { AppModule } from './app.module';
-import { ValidationPipe, Logger } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
   const port = process.env.PORT ?? 3000;
 
-  // Prefijo global
+  // Global prefix
   app.setGlobalPrefix('api');
 
-  // Validación global
+  // Global validation
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
-      transform: true, // transforma payloads a DTOs
+      transform: true, // transforms payloads to DTOs
       transformOptions: {
-        enableImplicitConversion: true, // permite conversión de tipos automáticamente
+        enableImplicitConversion: true, // enables automatic type conversion
       },
     }),
   );
 
-  // --- CONFIGURACIÓN SWAGGER CON JWT ---
+  // --- SWAGGER WITH JWT ---
   const config = new DocumentBuilder()
-    .setTitle('Mi API')
-    .setDescription('Documentación automática de la API con JWT')
+    .setTitle('Teslo RESTFul API')
+    .setDescription('Teslo shop endpoints')
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -34,13 +35,15 @@ async function bootstrap() {
         scheme: 'bearer',
         bearerFormat: 'JWT',
       },
-      'JWT', // Nombre del esquema de seguridad
+      'JWT',
     )
+    .addTag('Auth')
+    .addTag('Products')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: { persistAuthorization: true }, // Mantener token al recargar
+    swaggerOptions: { persistAuthorization: true }, // Persist token on refresh
   });
   // --------------------------------------
 
