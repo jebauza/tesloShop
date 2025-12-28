@@ -49,18 +49,18 @@ export class ProductsController {
   }
 
   @Get()
-  @ApiQuery({
-    name: 'offset',
-    required: false,
-    description: 'The number of items to skip before starting to collect the result set. Defaults to 0.',
-    example: '1',
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    description: 'The maximum number of items to return. Defaults to 10',
-    example: '10',
-  })
+  // @ApiQuery({
+  //   name: 'offset',
+  //   required: false,
+  //   description: 'The number of items to skip before starting to collect the result set. Defaults to 0.',
+  //   example: '1',
+  // })
+  // @ApiQuery({
+  //   name: 'limit',
+  //   required: false,
+  //   description: 'The maximum number of items to return. Defaults to 10',
+  //   example: '10',
+  // })
   @ApiOkResponse({ description: 'OK', type: ProductPaginationResponseDto })
   @ApiBadRequestResponse({ description: 'Bad Request', example: { statusCode: 400, message: '...', error: 'Bad Request' } })
   @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
