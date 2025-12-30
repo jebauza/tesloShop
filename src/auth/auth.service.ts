@@ -23,6 +23,7 @@ export class AuthService {
 
   async register(createUserDto: CreateUserDto): Promise<AuthResponseDto> {
     const user = await this.create(createUserDto);
+    console.log('register');
 
     const authResponseDto: AuthResponseDto = {
       id: user.id,

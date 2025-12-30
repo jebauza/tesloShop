@@ -8,10 +8,10 @@ export class ProductResponseDto {
     Object.assign(this, product);
   }
 
-
   @ApiProperty({
     description: 'Product UUID',
     example: 'c56a4180-65aa-42ec-a945-5fd21dec0538',
+    uniqueItems: true,
   })
   @Expose()
   id: string;
@@ -19,6 +19,7 @@ export class ProductResponseDto {
   @ApiProperty({
     description: 'Product title',
     example: 'Camiseta deportiva',
+    uniqueItems: true,
   })
   @Expose()
   title: string;
@@ -34,7 +35,7 @@ export class ProductResponseDto {
   @ApiProperty({
     description: 'Product description',
     required: false,
-    example: 'Camiseta de alta calidad para entrenamiento',
+    example: 'lorem ipsum dolor sit amet',
   })
   @Expose()
   description?: string;
@@ -42,6 +43,7 @@ export class ProductResponseDto {
   @ApiProperty({
     description: 'Unique slug for the product',
     example: 'camiseta-deportiva',
+    uniqueItems: true,
   })
   @Expose()
   slug: string;
