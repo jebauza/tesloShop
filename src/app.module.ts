@@ -8,6 +8,7 @@ import { FilesModule } from './files/files.module';
 import { ProductsModule } from './products/products.module';
 import { SeedModule } from './seed/seed.module';
 import { AuthModule } from './auth/auth.module';
+import { MessageWsModule } from './message-ws/message-ws.module';
 
 @Module({
   imports: [
@@ -21,8 +22,12 @@ import { AuthModule } from './auth/auth.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       schema: (process.env.DB_SCHEMA ?? 'public'),
+
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
+
+      migrationsTableName: 'migrations',
+      migrations: [join(__dirname, 'migrations/*{.js,.ts}')],
     }),
 
     ServeStaticModule.forRoot({
@@ -38,6 +43,8 @@ import { AuthModule } from './auth/auth.module';
     FilesModule,
 
     AuthModule,
+
+    MessageWsModule,
   ],
 })
 export class AppModule {}

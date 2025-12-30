@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../auth/entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import dataSource from 'src/data-source';
 
 @Injectable()
 export class SeedService {
@@ -28,6 +29,7 @@ export class SeedService {
   private async deleteTables() {
     // Products
     await this.productsService.deleteAllProducts();
+    console.log('pase');
 
     // Users
     const queryBuilder = this.userRepository.createQueryBuilder();
@@ -61,5 +63,11 @@ export class SeedService {
     const results = await Promise.all(insertPromises);
 
     return true;
+  }
+
+  async checkDataSource() {
+    await dataSource.initialize();
+    console.log('Conexión OK');
+    await dataSource.destroy();
   }
 }
