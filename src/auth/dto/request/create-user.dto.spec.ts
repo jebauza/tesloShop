@@ -1,6 +1,6 @@
 import { validate } from 'class-validator';
 import { CreateUserDto } from './create-user.dto';
-import { plainToInstance } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 
 describe('CreateUserDto', () => {
   const data = {
@@ -10,10 +10,7 @@ describe('CreateUserDto', () => {
   };
 
   it('should be valid with correct data', async () => {
-    const dto = new CreateUserDto();
-    dto.email = data.email;
-    dto.fullname = data.fullname;
-    dto.password = data.password;
+    const dto = plainToClass(CreateUserDto, data);
 
     const errors = await validate(dto);
 
@@ -34,12 +31,20 @@ describe('CreateUserDto', () => {
   });
 
   it('should fail if fields are empty', async () => {
-    const input = { email: '', fullname: '', password: '' };
-    const dto = plainToInstance(CreateUserDto, input);
+    const dto = plainToInstance(CreateUserDto, {
+      email: '',
+      fullname: '',
+      password: '',
+    });
 
     const errors = await validate(dto);
 
     expect(errors.length).toBeGreaterThanOrEqual(3);
+    expect(errors.map((e) => e.property)).toEqual([
+      'email',
+      'fullname',
+      'password',
+    ]);
   });
 
   it('should fail if email is not a valid email', async () => {
