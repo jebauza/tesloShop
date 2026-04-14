@@ -17,7 +17,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 
     TypeOrmModule.forFeature([User]),
 
-    PassportModule.register({defaultStrategy: 'jwt'}),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
 
     JwtModule.registerAsync({
       imports: [ConfigModule] /* [] */,
@@ -26,11 +26,11 @@ import { JwtStrategy } from './strategies/jwt.strategy';
         // console.log('JWT secret', configService.get('JWT_SECRET'));
         // console.log('JWT_SECRET', process.env.JWT_SECRET);
         return {
-          secret: configService.get('JWT_SECRET') /* process.env.JWT_SECRET */, 
+          secret: configService.get('JWT_SECRET') /* process.env.JWT_SECRET */,
           signOptions: {
             expiresIn: '2h',
-          }
-        }
+          },
+        };
       },
     }),
 
@@ -40,8 +40,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     //     expiresIn: '2h',
     //   }
     // }),
-
   ],
-  exports: [TypeOrmModule, JwtStrategy, PassportModule, JwtModule]
+  exports: [TypeOrmModule, JwtStrategy, PassportModule, JwtModule],
 })
 export class AuthModule {}
