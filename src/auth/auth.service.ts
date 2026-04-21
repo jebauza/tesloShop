@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
@@ -13,7 +13,6 @@ import { handleDBException } from '../common/helpers/errors.helper';
 
 @Injectable()
 export class AuthService {
-
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
@@ -23,13 +22,12 @@ export class AuthService {
 
   async register(createUserDto: CreateUserDto): Promise<AuthResponseDto> {
     const user = await this.create(createUserDto);
-    console.log('register');
 
     const authResponseDto: AuthResponseDto = {
       id: user.id,
       email: user.email,
       fullname: user.fullname,
-      token: this.getJwtToken({id: user.id})
+      token: this.getJwtToken({ id: user.id }),
     };
 
     return authResponseDto;
@@ -37,7 +35,7 @@ export class AuthService {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
-      const {password, ...userData} = createUserDto;
+      const { password, ...userData } = createUserDto;
       const user = this.usersRepository.create({
         ...userData,
         password: bcrypt.hashSync(password, 10),
@@ -45,7 +43,6 @@ export class AuthService {
       await this.usersRepository.save(user);
 
       return user;
-
     } catch (error) {
       handleDBException('AuthService', error);
       throw error;
@@ -53,47 +50,45 @@ export class AuthService {
   }
 
   async login(loginUserDto: LoginUserDto): Promise<AuthResponseDto> {
-    const {email, password} = loginUserDto;
+    const { email, password } = loginUserDto;
     const user = await this.usersRepository.findOne({
-      where: {email},
+      where: { email },
       select: {
-        id: true, 
+        id: true,
         email: true,
         password: true,
         fullname: true,
-      }
+      },
     });
 
-    if (!user)
-      throw new UnauthorizedException('Invalid credentials');
+    if (!user) throw new UnauthorizedException('Invalid credentials (email)');
 
     if (!bcrypt.compareSync(password, user.password))
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials (password)');
 
     const authResponseDto: AuthResponseDto = {
       id: user.id,
       email: user.email,
       fullname: user.fullname,
-      token: this.getJwtToken({id: user.id})
+      token: this.getJwtToken({ id: user.id }),
     };
 
     return authResponseDto;
   }
 
   checkAuthStatus(user: User): AuthResponseDto {
-
     const authResponseDto: AuthResponseDto = {
       id: user.id,
       email: user.email,
       fullname: user.fullname,
-      token: this.getJwtToken({id: user.id})
+      token: this.getJwtToken({ id: user.id }),
     };
 
     return authResponseDto;
   }
 
-  private getJwtToken( payload: JwtPayload ) {
-    const token = this.jwtService.sign( payload );
+  private getJwtToken(payload: JwtPayload) {
+    const token = this.jwtService.sign(payload);
 
     return token;
   }

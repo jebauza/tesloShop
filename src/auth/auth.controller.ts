@@ -1,6 +1,26 @@
-import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Post, Req, SetMetadata, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 import { AuthResponseDto } from './dto/response/auth-response.dto';
 import { CreateUserDto } from './dto/request/create-user.dto';
@@ -25,8 +45,14 @@ export class AuthController {
   @ApiOperation({ summary: 'Register a new user' })
   @ApiBody({ type: CreateUserDto })
   @ApiCreatedResponse({ description: 'OK', type: AuthResponseDto })
-  @ApiBadRequestResponse({ description: 'Bad Request', example: { statusCode: 400, message: '...', error: 'Bad Request' } })
-  @ApiInternalServerErrorResponse({ description: 'Internal Server Error', example: { statusCode: 500, message: 'Internal server error' } })
+  @ApiBadRequestResponse({
+    description: 'Bad Request',
+    example: { statusCode: 400, message: '...', error: 'Bad Request' },
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal Server Error',
+    example: { statusCode: 500, message: 'Internal server error' },
+  })
   registerUser(@Body() createUserDto: CreateUserDto): Promise<AuthResponseDto> {
     return this.authService.register(createUserDto);
   }
@@ -36,7 +62,14 @@ export class AuthController {
   @ApiOperation({ summary: 'User login' })
   @ApiBody({ type: LoginUserDto })
   @ApiOkResponse({ description: 'OK', type: AuthResponseDto })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized', example: { statusCode: 401, message: 'Invalid credentials', error: 'Unauthorized' } })
+  @ApiUnauthorizedResponse({
+    description: 'Unauthorized',
+    example: {
+      statusCode: 401,
+      message: 'Invalid credentials',
+      error: 'Unauthorized',
+    },
+  })
   @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
   loginUser(@Body() loginUserDto: LoginUserDto): Promise<AuthResponseDto> {
     return this.authService.login(loginUserDto);
@@ -64,8 +97,6 @@ export class AuthController {
     @RawHeaders() rawHeaders: string[],
     @Headers() headers: IncomingHttpHeaders,
   ) {
-    console.log(request);
-
     return {
       user,
       email,
@@ -78,9 +109,7 @@ export class AuthController {
   // @SetMetadata('roles', ['admin', 'super-user'])
   @RoleProtected(ValidRoles.superUser, ValidRoles.admin)
   @UseGuards(AuthGuard(), UserRoleGuard)
-  testingPrivateRoute2(
-    @GetUser() user: User,
-  ) {
+  testingPrivateRoute2(@GetUser() user: User) {
     return {
       user,
     };
@@ -88,9 +117,7 @@ export class AuthController {
 
   @Get('private3')
   @Auth()
-  testingPrivateRoute3(
-    @GetUser() user: User,
-  ) {
+  testingPrivateRoute3(@GetUser() user: User) {
     return {
       user,
     };
@@ -98,9 +125,7 @@ export class AuthController {
 
   @Get('private4')
   @Auth(ValidRoles.admin)
-  testingPrivateRoute4(
-    @GetUser() user: User,
-  ) {
+  testingPrivateRoute4(@GetUser() user: User) {
     return {
       user,
     };

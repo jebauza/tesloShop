@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm';
 import { join } from 'path';
 
 export default new DataSource({
-  ssl: process.env.STAGE === 'prod',
+  ssl: process.env.STAGE === 'prod' || process.env.DB_SSL === 'true',
   type: 'postgres',
   host: process.env.DB_HOST,
   port: +(process.env.DB_PORT ?? '5432'),
