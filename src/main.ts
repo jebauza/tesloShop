@@ -1,13 +1,28 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 
 import { AppModule } from './app.module';
 
-async function bootstrap() {
+export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
   const port = process.env.PORT ?? 3000;
+
+  // Helmet configura cabeceras HTTP seguras para proteger contra vulnerabilidades
+  // comunes como XSS, clickjacking y MIME-type sniffing.
+  app.use(helmet());
+
+  // En producción se restringe CORS a los orígenes explícitos definidos en variables de entorno
+  // para evitar peticiones cross-origin no autorizadas.
+  // En desarrollo se permiten todos los orígenes por comodidad.
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') ?? [];
+  app.enableCors({
+    origin: process.env.STAGE === 'prod' ? allowedOrigins : true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], // Se excluyen OPTIONS, HEAD y TRACE para reducir la superficie de ataque
+    credentials: true, // Permite cookies y cabeceras Authorization en peticiones cross-origin
+  });
 
   // Global prefix
   app.setGlobalPrefix('api');
