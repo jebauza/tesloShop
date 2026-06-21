@@ -3,6 +3,7 @@ import {
   BeforeUpdate,
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -13,44 +14,57 @@ import { User } from '../../auth/entities/user.entity';
 
 @Entity({ name: 'products' })
 export class Product {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn('uuid', {
+    name: 'id',
+    primaryKeyConstraintName: 'PK_products_id',
+  })
   id: string;
 
-  @Column('text', {
-    unique: true,
+  @Index('UQ_products_title', { unique: true })
+  @Column('varchar', {
+    name: 'title',
+    length: 100,
   })
   title: string;
 
   @Column('float', {
+    name: 'price',
     default: 0,
   })
   price: number;
 
-  @Column({
-    type: 'text',
+  @Column('text', {
+    name: 'description',
     nullable: true,
   })
   description: string;
 
-  @Column('text', {
-    unique: true,
+  @Index('UQ_products_slug', { unique: true })
+  @Column('varchar', {
+    name: 'slug',
+    length: 255,
   })
   slug: string;
 
   @Column('smallint', {
+    name: 'stock',
     default: 0,
   })
   stock: number;
 
   @Column('text', {
+    name: 'sizes',
     array: true,
   })
   sizes: string[];
 
-  @Column('text')
+  @Column('varchar', {
+    name: 'gender',
+  })
   gender: string;
 
   @Column('text', {
+    name: 'tags',
     array: true,
     default: [],
   })
@@ -62,8 +76,12 @@ export class Product {
   })
   images?: ProductImage[];
 
+  @Index('IDX_products_user_id')
+  @JoinColumn({
+    name: 'user_id',
+    foreignKeyConstraintName: 'FK_products_user_id',
+  })
   @ManyToOne(() => User, (user) => user.products, { eager: true })
-  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @BeforeInsert()

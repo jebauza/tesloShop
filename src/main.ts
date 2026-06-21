@@ -10,24 +10,32 @@ export async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const port = process.env.PORT ?? 3000;
 
-  // Helmet configura cabeceras HTTP seguras para proteger contra vulnerabilidades
-  // comunes como XSS, clickjacking y MIME-type sniffing.
+  // --- HELMET ---
+  // Sets secure HTTP headers to protect against common web vulnerabilities
+  // such as XSS, clickjacking, and MIME-type sniffing.
   app.use(helmet());
+  // --------------
 
-  // En producción se restringe CORS a los orígenes explícitos definidos en variables de entorno
-  // para evitar peticiones cross-origin no autorizadas.
-  // En desarrollo se permiten todos los orígenes por comodidad.
+  // --- CORS ---
+  // In production, restricted to explicit origins from environment variables
+  // to prevent unauthorized cross-origin requests.
+  // In development, all origins are allowed for convenience.
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') ?? [];
   app.enableCors({
     origin: process.env.STAGE === 'prod' ? allowedOrigins : true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], // Se excluyen OPTIONS, HEAD y TRACE para reducir la superficie de ataque
-    credentials: true, // Permite cookies y cabeceras Authorization en peticiones cross-origin
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], // OPTIONS, HEAD and TRACE are excluded to reduce attack surface
+    credentials: true, // Allows cookies and Authorization headers in cross-origin requests
   });
+  // ------------
 
-  // Global prefix
+  // --- GLOBAL PREFIX ---
+  // All routes are prefixed with /api (e.g. /api/products, /api/auth).
   app.setGlobalPrefix('api');
+  // ---------------------
 
-  // Global validation
+  // --- GLOBAL VALIDATION ---
+  // Validates and transforms all incoming request payloads using class-validator.
+  // Strips unknown properties (whitelist) and rejects requests with extra fields.
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -38,6 +46,7 @@ export async function bootstrap() {
       },
     }),
   );
+  // -------------------------
 
   // --- SWAGGER WITH JWT ---
   const config = new DocumentBuilder()
